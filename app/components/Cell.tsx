@@ -4,63 +4,62 @@ import { createMachine, sendParent } from 'xstate'
 import { pure } from 'xstate/lib/actions'
 
 export const createCellMachine = (coords: [number, number], value: number | 'X') =>
-  createMachine({
-    id: `cell-${coords.join('-')}`,
-    initial: 'unrevealed',
-    context: {
-      coords,
-      value
-    },
-    states: {
-      unrevealed: {
-        on: {
-          CLICK: {
-            target: 'revealed',
-            actions: pure((context: any, event) => {
-              if (context.value === 0) {
-                return sendParent({ type: 'REVEAL_EMPTIES', value: context.coords })
-              }
-              if (context.value === 'X') {
-                return sendParent({ type: 'EXPLODE', value: context.coords })
-              }
-            })
+  createMachine(
+    {
+      id: `cell-${coords.join('-')}`,
+      initial: 'unrevealed',
+      context: {
+        coords,
+        value
+      },
+      states: {
+        unrevealed: {
+          on: {
+            CLICK: {
+              target: 'revealed',
+              actions: 'reveal'
+            },
+            REVEAL: {
+              target: 'revealed',
+              actions: 'reveal'
+            },
+            TOGGLE_FLAG: {
+              target: 'flagged'
+            }
           },
-
-          REVEAL: {
-            target: 'revealed',
-            actions: pure((context: any, event) => {
-              if (context.value === 0) {
-                return sendParent({ type: 'REVEAL_EMPTIES', value: context.coords })
-              }
-              if (context.value === 'X') {
-                return sendParent({ type: 'EXPLODE', value: context.coords })
-              }
-            })
-          },
-          TOGGLE_FLAG: {
-            target: 'flagged'
+          exit: 'unreveal'
+        },
+        flagged: {
+          on: {
+            TOGGLE_FLAG: {
+              target: 'unrevealed'
+            }
           }
         },
-        exit: sendParent((context: any, event) => ({ type: 'UNREVEAL', value: context.coords }))
-      },
-      flagged: {
-        entry: sendParent((context: any, event) => ({ type: 'FLAG', value: context.coords })),
-        exit: sendParent((context: any, event) => ({ type: 'UNFLAG', value: context.coords })),
-        on: {
-          TOGGLE_FLAG: {
-            target: 'unrevealed'
-          }
-        }
-      },
-      revealed: {
-        on: {
-          CLICK: {
-            actions: sendParent((context: any) => ({ type: 'REVEAL_NEIGHBORS', value: context.coords }))
+        revealed: {
+          on: {
+            CLICK: {
+              actions: 'revealNeighbors'
+            }
           }
         }
       }
+    },
+    {
+      actions: {
+        reveal: pure((context: any) => {
+          if (context.value === 0) {
+            return sendParent({ type: 'REVEAL_NEIGHBORS', value: context.coords })
+          }
+          if (context.value === 'X') {
+            return sendParent({ type: 'EXPLODE', value: context.coords })
+          }
+        }),
+        revealNeighbors: sendParent((context: any) => ({ type: 'REVEAL_NEIGHBORS', value: context.coords })),
+        unreveal: sendParent((context: any) => ({ type: 'UNREVEAL', value: context.coords }))
+      }
     }
-  })
+  )
 
 const Cell = ({ service }: { service: any }) => {
   const [current, send]: [any, any] = useActor(service)

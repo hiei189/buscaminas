@@ -3,42 +3,12 @@ import { ClientOnly } from 'remix-utils'
 import { assign, createMachine, send, spawn } from 'xstate'
 import { pure } from 'xstate/lib/actions'
 import Cell, { createCellMachine } from '~/components/Cell'
+import { getNeighbors, getNRandomCoords, isInLimits } from '~/helpers/utils'
 
 const ROWS = 6
 const COLS = 6
 const CELL_SIZE = 48
 const BOMBS = 7
-
-const getNRandomCoords = (n: Number) => {
-  const coords: [number, number][] = []
-  for (let i = 0; i < n; i++) {
-    const x = Math.floor(Math.random() * ROWS)
-    const y = Math.floor(Math.random() * COLS)
-    if (coords.some(([i, j]) => i === x && j === y)) {
-      i--
-    } else {
-      coords.push([x, y])
-    }
-  }
-
-  return coords
-}
-
-const isInLimits = ([x, y]: [number, number]) => x >= 0 && x < ROWS && y >= 0 && y < COLS
-
-const getNeighbors = ([x, y]: [number, number]) => {
-  const neighbors: [number, number][] = []
-  for (let i = -1; i <= 1; i++) {
-    for (let j = -1; j <= 1; j++) {
-      if (i === 0 && j === 0) continue
-      const [nx, ny] = [x + i, y + j]
-      if (isInLimits([nx, ny])) {
-        neighbors.push([nx, ny])
-      }
-    }
-  }
-  return neighbors
-}
 
 const gameMachine = createMachine(
   {
@@ -51,9 +21,6 @@ const gameMachine = createMachine(
       playing: {
         entry: 'fillField',
         on: {
-          REVEAL_EMPTIES: {
-            actions: 'revealEmpties'
-          },
           UNREVEAL: {
             actions: 'checkWin'
           },
@@ -82,9 +49,8 @@ const gameMachine = createMachine(
   {
     actions: {
       fillField: assign(() => {
-        console.log('filling')
         let cells = []
-        const bombsCoords = getNRandomCoords(BOMBS)
+        const bombsCoords = getNRandomCoords(BOMBS, ROWS, COLS)
 
         const isBomb = ([row, col]: [number, number]) => bombsCoords.some(([i, j]) => i === row && j === col)
 
@@ -95,7 +61,7 @@ const gameMachine = createMachine(
             if (isBomb([row, col])) {
               value = 'X'
             } else {
-              const neighbors = getNeighbors([row, col])
+              const neighbors = getNeighbors([row, col], ROWS, COLS)
               let count: number = 0
               neighbors.forEach(([i, j]) => {
                 if (isBomb([i, j])) count++
@@ -113,27 +79,17 @@ const gameMachine = createMachine(
           bombsCoords
         }
       }),
-      revealEmpties: (context, event) => {
-        const callerCoords = event.value
-        getNeighbors(callerCoords).forEach(([row, col]) => {
-          const cell = context.cells.find(({ id }) => id === `cell-${row}-${col}`)
-          if (cell) {
-            cell.send('REVEAL')
-          }
-        })
-      },
       revealNeighbors: (context, event) => {
-        console.log('revelkando xd')
         const callerCoords = event.value
-        getNeighbors(callerCoords).forEach(([row, col]) => {
+        getNeighbors(callerCoords, ROWS, COLS).forEach(([row, col]) => {
           const cell = context.cells.find(({ id }) => id === `cell-${row}-${col}`)
           if (cell) {
             cell.send('REVEAL')
           }
         })
       },
-      checkWin: pure((context, event) => {
-        const gameFinished = context.cells.filter(cell => cell.getSnapshot().value === 'unrevealed').length === 0
+      checkWin: pure(context => {
+        const gameFinished = context.cells.filter((cell: any) => cell.getSnapshot().value === 'unrevealed').length === 0
         if (!gameFinished) return
         const flaggeds = context.cells.filter(cell => cell.getSnapshot().value === 'flagged')
         const isWin = context.bombsCoords.every(bomb =>
@@ -143,12 +99,11 @@ const gameMachine = createMachine(
         )
         if (isWin) return send('WIN')
       }),
-      explode: (context, event) => {
+      explode: context =>
         context.cells.forEach(cell => {
           cell.send('REVEAL')
-        })
-      },
-      reset: assign((context, event) => ({
+        }),
+      reset: assign(() => ({
         cells: [],
         bombsCoords: []
       }))
