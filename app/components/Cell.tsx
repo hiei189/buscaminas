@@ -2,6 +2,7 @@ import { useActor } from '@xstate/react'
 import React from 'react'
 import { createMachine, sendParent } from 'xstate'
 import { pure } from 'xstate/lib/actions'
+import Button from './Button'
 
 export const createCellMachine = (coords: [number, number], value: number | 'X') =>
   createMachine(
@@ -14,6 +15,11 @@ export const createCellMachine = (coords: [number, number], value: number | 'X')
       },
       states: {
         unrevealed: {
+          initial: 'idle',
+          states: {
+            idle: {},
+            presset: {}
+          },
           on: {
             CLICK: {
               target: 'revealed',
@@ -39,7 +45,7 @@ export const createCellMachine = (coords: [number, number], value: number | 'X')
         revealed: {
           on: {
             CLICK: {
-              actions: 'revealNeighbors'
+              actions: 'revealNeighborsIfFlagged'
             }
           }
         }
@@ -55,13 +61,16 @@ export const createCellMachine = (coords: [number, number], value: number | 'X')
             return sendParent({ type: 'EXPLODE', value: context.coords })
           }
         }),
-        revealNeighbors: sendParent((context: any) => ({ type: 'REVEAL_NEIGHBORS', value: context.coords })),
+        revealNeighborsIfFlagged: sendParent((context: any) => ({
+          type: 'REVEAL_NEIGHBORS_IF_FLAGGED',
+          value: { coords: context.coords, value: context.value }
+        })),
         unreveal: sendParent((context: any) => ({ type: 'UNREVEAL', value: context.coords }))
       }
     }
   )
 
-const Cell = ({ service }: { service: any }) => {
+const Cell = ({ service, parentCurrent }: { service: any; parentCurrent: any }) => {
   const [current, send]: [any, any] = useActor(service)
   const colorHash = [
     'text-blue-500',
@@ -77,18 +86,19 @@ const Cell = ({ service }: { service: any }) => {
   const isBomb = current.context.value === 'X'
   const isZero = current.context.value === 0
   const color = !isZero && !isBomb ? colorHash[current.context.value - 1] : ''
+  const bgClass = current.matches('revealed')
+    ? isBomb && parentCurrent.matches('lost')
+      ? 'bg-red-300 '
+      : 'bg-gray-100 '
+    : 'bg-gray-300 hover:opacity-50 '
   return (
-    <button
+    <Button
       onClick={() => send('CLICK')}
       onContextMenu={e => {
         e.preventDefault()
         send('TOGGLE_FLAG')
       }}
-      className={
-        ' font-bold border border-gray-200  h-12 w-12 ' +
-        (current.matches('revealed') ? 'bg-gray-100 ' : 'bg-gray-300 ') +
-        color
-      }
+      className={bgClass + color}
     >
       {current.matches('revealed')
         ? isBomb
@@ -99,7 +109,7 @@ const Cell = ({ service }: { service: any }) => {
         : current.matches('flagged')
         ? '🚩'
         : ''}
-    </button>
+    </Button>
   )
 }
 

@@ -30,6 +30,9 @@ const gameMachine = createMachine(
           },
           REVEAL_NEIGHBORS: {
             actions: 'revealNeighbors'
+          },
+          REVEAL_NEIGHBORS_IF_FLAGGED: {
+            actions: 'revealNeighborsIfFlagged'
           }
         }
       },
@@ -79,9 +82,21 @@ const gameMachine = createMachine(
           bombsCoords
         }
       }),
-      revealNeighbors: (context, event) => {
-        const callerCoords = event.value
-        getNeighbors(callerCoords, ROWS, COLS).forEach(([row, col]) => {
+      revealNeighborsIfFlagged: (context, event: any) => {
+        const { coords, value } = event.value
+        const neighbors = getNeighbors(coords, ROWS, COLS).map(([row, col]) =>
+          context.cells.find(({ id }) => id === `cell-${row}-${col}`)
+        )
+        const flaggedCount = neighbors.filter(cell => cell.getSnapshot().value === 'flagged').length
+
+        if (flaggedCount === value) {
+          neighbors.forEach((cell: any) => {
+            cell.send('REVEAL')
+          })
+        }
+      },
+      revealNeighbors: (context, event: any) => {
+        getNeighbors(event.value, ROWS, COLS).forEach(([row, col]) => {
           const cell = context.cells.find(({ id }) => id === `cell-${row}-${col}`)
           if (cell) {
             cell.send('REVEAL')
@@ -121,7 +136,7 @@ export default function Index() {
         {current.matches('lost') ? 'Perdiste :(' : ''}
         <div className='flex flex-wrap mx-auto' style={{ width: COLS * CELL_SIZE, height: ROWS * CELL_SIZE }}>
           {current.context.cells.map(cell => (
-            <Cell key={cell.id} service={cell} />
+            <Cell key={cell.id} service={cell} parentCurrent={current} />
           ))}
         </div>
         <button className='mt-8 bg-blue-700 hover:bg-blue-800 text-white py-2 px-8' onClick={() => send('RESTART')}>
