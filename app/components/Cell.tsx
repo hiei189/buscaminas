@@ -17,8 +17,16 @@ export const createCellMachine = (coords: [number, number], value: number | 'X')
         unrevealed: {
           initial: 'idle',
           states: {
-            idle: {},
-            presset: {}
+            idle: {
+              on: {
+                PRESS: 'pressed'
+              }
+            },
+            pressed: {
+              on: {
+                RELEASE: 'idle'
+              }
+            }
           },
           on: {
             CLICK: {
@@ -46,6 +54,12 @@ export const createCellMachine = (coords: [number, number], value: number | 'X')
           on: {
             CLICK: {
               actions: 'revealNeighborsIfFlagged'
+            },
+            PRESS_BUTTON: {
+              actions: 'pressNeighbors'
+            },
+            RELEASE_BUTTON: {
+              actions: 'releaseNeighbors'
             }
           }
         }
@@ -64,6 +78,14 @@ export const createCellMachine = (coords: [number, number], value: number | 'X')
         revealNeighborsIfFlagged: sendParent((context: any) => ({
           type: 'REVEAL_NEIGHBORS_IF_FLAGGED',
           value: { coords: context.coords, value: context.value }
+        })),
+        pressNeighbors: sendParent((context: any) => ({
+          type: 'PRESS_NEIGHBORS',
+          value: context.coords
+        })),
+        releaseNeighbors: sendParent((context: any) => ({
+          type: 'RELEASE_NEIGHBORS',
+          value: context.coords
         })),
         unreveal: sendParent((context: any) => ({ type: 'UNREVEAL', value: context.coords }))
       }
@@ -86,10 +108,13 @@ const Cell = ({ service, parentCurrent }: { service: any; parentCurrent: any }) 
   const isBomb = current.context.value === 'X'
   const isZero = current.context.value === 0
   const color = !isZero && !isBomb ? colorHash[current.context.value - 1] : ''
+
   const bgClass = current.matches('revealed')
     ? isBomb && parentCurrent.matches('lost')
       ? 'bg-red-300 '
       : 'bg-gray-100 '
+    : current.matches('unrevealed.pressed')
+    ? 'bg-gray-100 '
     : 'bg-gray-300 hover:opacity-50 '
   return (
     <Button
@@ -98,6 +123,7 @@ const Cell = ({ service, parentCurrent }: { service: any; parentCurrent: any }) 
         e.preventDefault()
         send('TOGGLE_FLAG')
       }}
+      onMouseDown={() => send('PRESS_BUTTON')}
       className={bgClass + color}
     >
       {current.matches('revealed')

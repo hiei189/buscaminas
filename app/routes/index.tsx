@@ -33,6 +33,12 @@ const gameMachine = createMachine(
           },
           REVEAL_NEIGHBORS_IF_FLAGGED: {
             actions: 'revealNeighborsIfFlagged'
+          },
+          PRESS_NEIGHBORS: {
+            actions: 'pressNeighbors'
+          },
+          RELEASE_NEIGHBORS: {
+            actions: 'releaseNeighbors'
           }
         }
       },
@@ -103,6 +109,17 @@ const gameMachine = createMachine(
           }
         })
       },
+      pressNeighbors: (context, event: any) => {
+        getNeighbors(event.value, ROWS, COLS).forEach(([row, col]) => {
+          const cell = context.cells.find(({ id }) => id === `cell-${row}-${col}`)
+          if (cell) {
+            cell.send('PRESS')
+          }
+        })
+      },
+      releaseNeighbors: context => {
+        context.cells.forEach((cell: any) => cell.send('RELEASE'))
+      },
       checkWin: pure(context => {
         const gameFinished = context.cells.filter((cell: any) => cell.getSnapshot().value === 'unrevealed').length === 0
         if (!gameFinished) return
@@ -114,10 +131,7 @@ const gameMachine = createMachine(
         )
         if (isWin) return send('WIN')
       }),
-      explode: context =>
-        context.cells.forEach(cell => {
-          cell.send('REVEAL')
-        }),
+      explode: context => context.cells.forEach(cell => cell.send('REVEAL')),
       reset: assign(() => ({
         cells: [],
         bombsCoords: []
@@ -129,7 +143,7 @@ const gameMachine = createMachine(
 export default function Index() {
   const [current, send] = useMachine(gameMachine)
   return (
-    <div className='p-12 container mx-auto w-full text-center'>
+    <div className='p-12 container mx-auto w-full text-center' onMouseUp={() => send('RELEASE_NEIGHBORS')}>
       <h1 className='mb-4 text-2xl font-bold'>Buscaminas</h1>
       <ClientOnly>
         {current.matches('won') ? 'Felicidades, ganaste!' : ''}
