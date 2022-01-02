@@ -24,13 +24,13 @@ export default function App() {
         <Links />
       </head>
       <body className='h-[calc(100vh+1px)]'>
-        <main className='h-[90vh]'>
+        <main className='min-h-[90vh]'>
           <Outlet />
         </main>
         <ScrollRestoration />
         <Scripts />
         {process.env.NODE_ENV === 'development' && <LiveReload />}
-        <footer className='h-[10vh] bg-gray-900 text-white p-4'>
+        <footer className='min-h-[10vh] bg-gray-900 text-white p-4'>
           <a className='hover:underline' href='https://github.com/hiei189/buscaminas'>
             Repositorio
           </a>

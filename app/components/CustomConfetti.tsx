@@ -29,6 +29,7 @@ const CustomConfetti = () => {
         const size = randRange(50, 100)
         return (
           <img
+            key={i}
             src='/cristiam.png'
             style={{
               position: 'absolute',

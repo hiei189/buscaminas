@@ -6,17 +6,33 @@ import Cell, { createCellMachine } from '~/components/Cell'
 import CustomConfetti from '~/components/CustomConfetti'
 import { getNeighbors, getNRandomCoords, isInLimits } from '~/helpers/utils'
 
-const ROWS = 6
-const COLS = 6
-const CELL_SIZE = 48
-const BOMBS = 7
+const CELL_SIZE = 24
+
+const difficultyHash = {
+  easy: {
+    rows: 6,
+    cols: 6,
+    bombs: 10
+  },
+  medium: {
+    rows: 16,
+    cols: 16,
+    bombs: 40
+  },
+  hard: {
+    rows: 16,
+    cols: 30,
+    bombs: 99
+  }
+}
 
 const gameMachine = createMachine(
   {
     initial: 'playing',
     context: {
       cells: [],
-      bombsCoords: []
+      bombsCoords: [],
+      ...difficultyHash.easy
     },
     states: {
       playing: {
@@ -53,25 +69,30 @@ const gameMachine = createMachine(
       RESTART: {
         target: 'playing',
         actions: 'reset'
+      },
+      CHANGE_DIFFICULTY: {
+        target: 'playing',
+        actions: 'changeDifficulty'
       }
     }
   },
   {
     actions: {
-      fillField: assign(() => {
+      fillField: assign(context => {
         let cells = []
-        const bombsCoords = getNRandomCoords(BOMBS, ROWS, COLS)
+        const { rows, cols, bombs } = context
+        const bombsCoords = getNRandomCoords(bombs, rows, cols)
 
         const isBomb = ([row, col]: [number, number]) => bombsCoords.some(([i, j]) => i === row && j === col)
 
-        for (let row = 0; row < ROWS; row++) {
-          for (let col = 0; col < COLS; col++) {
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < cols; col++) {
             let value: number | 'X'
 
             if (isBomb([row, col])) {
               value = 'X'
             } else {
-              const neighbors = getNeighbors([row, col], ROWS, COLS)
+              const neighbors = getNeighbors([row, col], rows, cols)
               let count: number = 0
               neighbors.forEach(([i, j]) => {
                 if (isBomb([i, j])) count++
@@ -91,14 +112,16 @@ const gameMachine = createMachine(
       }),
       revealNeighborsIfFlagged: (context, event: any) => {
         const { coords, value } = event.value
-        const neighbors = getNeighbors(coords, ROWS, COLS).map(([row, col]) =>
+        const { rows, cols } = context
+        const neighbors = getNeighbors(coords, rows, cols).map(([row, col]) =>
           context.cells.find(({ id }) => id === `cell-${row}-${col}`)
         )
         const flaggedCount = neighbors.filter(cell => cell.getSnapshot().value === 'flagged').length
         if (flaggedCount === value) neighbors.forEach((cell: any) => cell.send('REVEAL'))
       },
       revealNeighbors: (context, event: any) => {
-        getNeighbors(event.value, ROWS, COLS).forEach(([row, col]) => {
+        const { rows, cols } = context
+        getNeighbors(event.value, rows, cols).forEach(([row, col]) => {
           const cell = context.cells.find(({ id }) => id === `cell-${row}-${col}`)
           if (cell) {
             cell.send('REVEAL')
@@ -106,7 +129,8 @@ const gameMachine = createMachine(
         })
       },
       pressNeighbors: (context, event: any) => {
-        getNeighbors(event.value, ROWS, COLS).forEach(([row, col]) => {
+        const { rows, cols } = context
+        getNeighbors(event.value, rows, cols).forEach(([row, col]) => {
           const cell = context.cells.find(({ id }) => id === `cell-${row}-${col}`)
           if (cell) {
             cell.send('PRESS')
@@ -131,7 +155,17 @@ const gameMachine = createMachine(
       reset: assign(() => ({
         cells: [],
         bombsCoords: []
-      }))
+      })),
+      changeDifficulty: assign((context, event) => {
+        console.log('changing difficulty')
+        const difficulty = event.value
+        console.log('🚀 ~ file: index.tsx ~ line 162 ~ changeDifficulty:assign ~ difficulty', difficulty)
+        return {
+          cells: [],
+          bombsCoords: [],
+          ...difficultyHash[difficulty]
+        }
+      })
     }
   }
 )
@@ -143,8 +177,18 @@ export default function Index() {
       <h1 className='mb-4 text-2xl font-bold'>Buscaminas</h1>
       <ClientOnly>
         {current.matches('won') && <CustomConfetti />}
-
-        <div className='flex flex-wrap mx-auto' style={{ width: COLS * CELL_SIZE, height: ROWS * CELL_SIZE }}>
+        <label className='block mb-8'>
+          <span className='mr-2 inline-block'>Dificultad: </span>
+          <select defaultValue='easy' onChange={e => send({ type: 'CHANGE_DIFFICULTY', value: e.target.value })}>
+            <option value='easy'>Fácil</option>
+            <option value='medium'>Medio</option>
+            <option value='hard'>Dificil</option>
+          </select>
+        </label>
+        <div
+          className='flex flex-wrap mx-auto'
+          style={{ width: current.context.cols * CELL_SIZE, height: current.context.rows * CELL_SIZE }}
+        >
           {current.context.cells.map(cell => (
             <Cell key={cell.id} service={cell} parentCurrent={current} />
           ))}
