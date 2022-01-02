@@ -1,9 +1,13 @@
 import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from 'remix'
 import type { MetaFunction } from 'remix'
 import styles from './tailwind.css'
+import customStyles from './styles.css'
 
 export function links() {
-  return [{ rel: 'stylesheet', href: styles }]
+  return [
+    { rel: 'stylesheet', href: styles },
+    { rel: 'stylesheet', href: customStyles }
+  ]
 }
 
 export const meta: MetaFunction = () => {
@@ -19,11 +23,18 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body>
-        <Outlet />
+      <body className='h-[calc(100vh+1px)]'>
+        <main className='h-[90vh]'>
+          <Outlet />
+        </main>
         <ScrollRestoration />
         <Scripts />
         {process.env.NODE_ENV === 'development' && <LiveReload />}
+        <footer className='h-[10vh] bg-gray-900 text-white p-4'>
+          <a className='hover:underline' href='https://github.com/hiei189/buscaminas'>
+            Repositorio
+          </a>
+        </footer>
       </body>
     </html>
   )

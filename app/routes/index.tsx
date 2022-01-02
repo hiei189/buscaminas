@@ -3,6 +3,7 @@ import { ClientOnly } from 'remix-utils'
 import { assign, createMachine, send, spawn } from 'xstate'
 import { pure } from 'xstate/lib/actions'
 import Cell, { createCellMachine } from '~/components/Cell'
+import CustomConfetti from '~/components/CustomConfetti'
 import { getNeighbors, getNRandomCoords, isInLimits } from '~/helpers/utils'
 
 const ROWS = 6
@@ -94,12 +95,7 @@ const gameMachine = createMachine(
           context.cells.find(({ id }) => id === `cell-${row}-${col}`)
         )
         const flaggedCount = neighbors.filter(cell => cell.getSnapshot().value === 'flagged').length
-
-        if (flaggedCount === value) {
-          neighbors.forEach((cell: any) => {
-            cell.send('REVEAL')
-          })
-        }
+        if (flaggedCount === value) neighbors.forEach((cell: any) => cell.send('REVEAL'))
       },
       revealNeighbors: (context, event: any) => {
         getNeighbors(event.value, ROWS, COLS).forEach(([row, col]) => {
@@ -146,13 +142,23 @@ export default function Index() {
     <div className='p-12 container mx-auto w-full text-center' onMouseUp={() => send('RELEASE_NEIGHBORS')}>
       <h1 className='mb-4 text-2xl font-bold'>Buscaminas</h1>
       <ClientOnly>
-        {current.matches('won') ? 'Felicidades, ganaste!' : ''}
-        {current.matches('lost') ? 'Perdiste :(' : ''}
+        {current.matches('won') && <CustomConfetti />}
+
         <div className='flex flex-wrap mx-auto' style={{ width: COLS * CELL_SIZE, height: ROWS * CELL_SIZE }}>
           {current.context.cells.map(cell => (
             <Cell key={cell.id} service={cell} parentCurrent={current} />
           ))}
         </div>
+        {current.matches('won') && (
+          <h1 className='text-5xl mt-8 mb-2 leading-loose font-bold text-transparent bg-clip-text bg-gradient-to-br from-blue-800 to-blue-100'>
+            Felicidades, ganaste!
+          </h1>
+        )}
+        {current.matches('lost') && (
+          <h1 className='text-5xl mt-8 mb-2 leading-loose font-bold text-transparent bg-clip-text bg-gradient-to-br to-red-100 from-pink-500'>
+            Oh no, perdiste! :(
+          </h1>
+        )}
         <button className='mt-8 bg-blue-700 hover:bg-blue-800 text-white py-2 px-8' onClick={() => send('RESTART')}>
           Reiniciar juego
         </button>
