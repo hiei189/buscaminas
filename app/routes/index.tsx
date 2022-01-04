@@ -173,7 +173,7 @@ const gameMachine = createMachine(
 export default function Index() {
   const [current, send] = useMachine(gameMachine)
   return (
-    <div className='p-12 container mx-auto w-full text-center' onMouseUp={() => send('RELEASE_NEIGHBORS')}>
+    <div className='p-6 sm:p-12 container mx-auto w-full text-center' onMouseUp={() => send('RELEASE_NEIGHBORS')}>
       <h1 className='mb-4 text-2xl font-bold'>Buscaminas</h1>
       <ClientOnly>
         {current.matches('won') && <CustomConfetti />}
@@ -185,27 +185,29 @@ export default function Index() {
             <option value='hard'>Dificil</option>
           </select>
         </label>
-        <div
-          className='flex flex-wrap mx-auto'
-          style={{ width: current.context.cols * CELL_SIZE, height: current.context.rows * CELL_SIZE }}
-        >
-          {current.context.cells.map(cell => (
-            <Cell key={cell.id} service={cell} parentCurrent={current} />
-          ))}
+        <div className='max-w-full overflow-x-auto mx-auto'>
+          <div
+            className='flex flex-wrap mx-auto'
+            style={{ width: current.context.cols * CELL_SIZE, height: current.context.rows * CELL_SIZE }}
+          >
+            {current.context.cells.map(cell => (
+              <Cell key={cell.id} service={cell} parentCurrent={current} />
+            ))}
+          </div>
         </div>
+        <button className='mt-8 bg-blue-700 hover:bg-blue-800 text-white py-2 px-8' onClick={() => send('RESTART')}>
+          Reiniciar juego
+        </button>
         {current.matches('won') && (
-          <h1 className='text-5xl mt-8 mb-2 leading-loose font-bold text-transparent bg-clip-text bg-gradient-to-br from-blue-800 to-blue-100'>
+          <h1 className='text-5xl mt-8 mb-2 leading-tight font-bold text-transparent bg-clip-text bg-gradient-to-br from-blue-800 to-blue-100'>
             Felicidades, ganaste!
           </h1>
         )}
         {current.matches('lost') && (
-          <h1 className='text-5xl mt-8 mb-2 leading-loose font-bold text-transparent bg-clip-text bg-gradient-to-br to-red-100 from-pink-500'>
+          <h1 className='text-5xl mt-8 mb-2 leading-tight font-bold text-transparent bg-clip-text bg-gradient-to-br to-red-100 from-pink-500'>
             Oh no, perdiste! :(
           </h1>
         )}
-        <button className='mt-8 bg-blue-700 hover:bg-blue-800 text-white py-2 px-8' onClick={() => send('RESTART')}>
-          Reiniciar juego
-        </button>
       </ClientOnly>
     </div>
   )

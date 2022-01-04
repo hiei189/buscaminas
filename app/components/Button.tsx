@@ -34,7 +34,7 @@ const Button = ({
       onContextMenu={onContextMenu}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
-      className={'font-bold border border-gray-200 h-6 w-6 shadow-inner ' + className}
+      className={'font-bold border border-gray-200 h-6 w-6 shadow-inner flex justify-center items-center ' + className}
     >
       {children}
     </button>

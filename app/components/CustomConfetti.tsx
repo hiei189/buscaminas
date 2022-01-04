@@ -25,7 +25,7 @@ const CustomConfetti = () => {
   //     />
   return (
     <Fragment>
-      {[...Array(20).keys()].map(i => {
+      {[...Array(10).keys()].map(i => {
         const size = randRange(50, 100)
         return (
           <img
