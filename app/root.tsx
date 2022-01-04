@@ -2,6 +2,7 @@ import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from 'rem
 import type { MetaFunction } from 'remix'
 import styles from './tailwind.css'
 import customStyles from './styles.css'
+import { Fragment } from 'react'
 
 export function links() {
   return [
@@ -22,15 +23,20 @@ export default function App() {
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Meta />
         <Links />
-        <script async src='https://www.googletagmanager.com/gtag/js?id=G-KGET8L83FQ'></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-KGET8L83FQ');`
-          }}
-        ></script>
+
+        {process.env.NODE_ENV !== 'development' && (
+          <Fragment>
+            <script async src='https://www.googletagmanager.com/gtag/js?id=G-KGET8L83FQ'></script>
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-KGET8L83FQ');`
+              }}
+            ></script>
+          </Fragment>
+        )}
       </head>
       <body className='h-[calc(100vh+1px)]'>
         <main className='min-h-[90vh]'>

@@ -157,9 +157,7 @@ const gameMachine = createMachine(
         bombsCoords: []
       })),
       changeDifficulty: assign((context, event) => {
-        console.log('changing difficulty')
         const difficulty = event.value
-        console.log('🚀 ~ file: index.tsx ~ line 162 ~ changeDifficulty:assign ~ difficulty', difficulty)
         return {
           cells: [],
           bombsCoords: [],
