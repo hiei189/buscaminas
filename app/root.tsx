@@ -22,6 +22,15 @@ export default function App() {
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Meta />
         <Links />
+        <script async src='https://www.googletagmanager.com/gtag/js?id=G-KGET8L83FQ'></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-KGET8L83FQ');`
+          }}
+        ></script>
       </head>
       <body className='h-[calc(100vh+1px)]'>
         <main className='min-h-[90vh]'>
