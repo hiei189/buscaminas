@@ -10,8 +10,8 @@ const CELL_SIZE = 24
 
 const difficultyHash = {
   easy: {
-    rows: 6,
-    cols: 6,
+    rows: 9,
+    cols: 9,
     bombs: 10
   },
   medium: {
