@@ -1,5 +1,5 @@
 import { useActor } from '@xstate/react'
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { createMachine, sendParent } from 'xstate'
 import { pure } from 'xstate/lib/actions'
 import Button from './Button'
@@ -94,6 +94,17 @@ export const createCellMachine = (coords: [number, number], value: number | 'X')
 
 const Cell = React.memo(({ service, lost }: { service: any; lost: boolean }) => {
   const [current, send]: [any, any] = useActor(service)
+
+  const handleClick = useCallback(() => send('CLICK'), [send])
+  const handleContextMenu = useCallback(
+    e => {
+      e.preventDefault()
+      send('TOGGLE_FLAG')
+    },
+    [send]
+  )
+  const handleMouseDown = useCallback(() => send('PRESS_BUTTON'), [send])
+
   const colorHash = [
     'text-blue-500',
     'text-green-500',
@@ -119,12 +130,9 @@ const Cell = React.memo(({ service, lost }: { service: any; lost: boolean }) => 
     : 'bg-gray-300 hover:opacity-50 '
   return (
     <Button
-      onClick={() => send('CLICK')}
-      onContextMenu={e => {
-        e.preventDefault()
-        send('TOGGLE_FLAG')
-      }}
-      onMouseDown={() => send('PRESS_BUTTON')}
+      onClick={handleClick}
+      onContextMenu={handleContextMenu}
+      onMouseDown={handleMouseDown}
       className={bgClass + color}
     >
       {current.matches('revealed')

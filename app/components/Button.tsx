@@ -11,37 +11,39 @@ const buttonMachine = createMachine({
   }
 })
 
-const Button = ({
-  children,
-  onClick,
-  onContextMenu,
-  onMouseDown,
-  onMouseUp,
-  className
-}: {
-  children: React.ElementType
-  onClick: React.MouseEventHandler<HTMLButtonElement>
-  onContextMenu: React.MouseEventHandler<HTMLButtonElement>
-  onMouseDown?: React.MouseEventHandler<HTMLButtonElement>
-  onMouseUp?: React.MouseEventHandler<HTMLButtonElement>
-  className?: string
-}) => {
-  const [current, send] = useMachine(buttonMachine)
+const Button = React.memo(
+  ({
+    children,
+    onClick,
+    onContextMenu,
+    onMouseDown,
+    onMouseUp,
+    className
+  }: {
+    children: React.ElementType
+    onClick: React.MouseEventHandler<HTMLButtonElement>
+    onContextMenu: React.MouseEventHandler<HTMLButtonElement>
+    onMouseDown?: React.MouseEventHandler<HTMLButtonElement>
+    onMouseUp?: React.MouseEventHandler<HTMLButtonElement>
+    className?: string
+  }) => {
+    const [current, send] = useMachine(buttonMachine)
 
-  return (
-    <button
-      onClick={onClick}
-      onContextMenu={onContextMenu}
-      onMouseDown={onMouseDown}
-      onMouseUp={onMouseUp}
-      className={
-        'font-bold border border-gray-200 h-6 w-6 shadow-inner flex justify-center items-center transition-colors	ease-out ' +
-        className
-      }
-    >
-      {children}
-    </button>
-  )
-}
+    return (
+      <button
+        onClick={onClick}
+        onContextMenu={onContextMenu}
+        onMouseDown={onMouseDown}
+        onMouseUp={onMouseUp}
+        className={
+          'font-bold border border-gray-200 h-6 w-6 shadow-inner flex justify-center items-center transition-colors	ease-out ' +
+          className
+        }
+      >
+        {children}
+      </button>
+    )
+  }
+)
 
 export default Button
