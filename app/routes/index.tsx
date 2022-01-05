@@ -153,7 +153,8 @@ const gameMachine = createMachine(
         )
         if (isWin) return send('WIN')
       }),
-      explode: context => context.cells.forEach(cell => cell.send('REVEAL')),
+      explode: context =>
+        context.cells.filter(cell => cell.getSnapshot().value !== 'revealed').forEach(cell => cell.send('REVEAL')),
       reset: assign(() => ({
         cells: [],
         bombsCoords: []
