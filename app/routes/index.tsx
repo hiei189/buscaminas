@@ -137,9 +137,7 @@ const gameMachine = createMachine(
           }
         })
       },
-      releaseNeighbors: context => {
-        context.cells.forEach((cell: any) => cell.send('RELEASE'))
-      },
+      releaseNeighbors: context => context.cells.forEach((cell: any) => cell.send('RELEASE')),
       checkWin: pure(context => {
         const gameFinished = context.cells.filter((cell: any) => cell.getSnapshot().value === 'unrevealed').length === 0
         if (!gameFinished) return
@@ -189,7 +187,7 @@ export default function Index() {
             style={{ width: current.context.cols * CELL_SIZE, height: current.context.rows * CELL_SIZE }}
           >
             {current.context.cells.map(cell => (
-              <Cell key={cell.id} service={cell} parentCurrent={current} />
+              <Cell key={cell.id} service={cell} lost={current.matches('lost')} />
             ))}
           </div>
         </div>

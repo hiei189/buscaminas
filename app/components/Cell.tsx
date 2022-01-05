@@ -1,5 +1,5 @@
 import { useActor } from '@xstate/react'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { createMachine, sendParent } from 'xstate'
 import { pure } from 'xstate/lib/actions'
 import Button from './Button'
@@ -92,7 +92,7 @@ export const createCellMachine = (coords: [number, number], value: number | 'X')
     }
   )
 
-const Cell = ({ service, parentCurrent }: { service: any; parentCurrent: any }) => {
+const Cell = React.memo(({ service, lost }: { service: any; lost: boolean }) => {
   const [current, send]: [any, any] = useActor(service)
   const colorHash = [
     'text-blue-500',
@@ -107,10 +107,11 @@ const Cell = ({ service, parentCurrent }: { service: any; parentCurrent: any }) 
   ]
   const isBomb = current.context.value === 'X'
   const isZero = current.context.value === 0
-  const color = !isZero && !isBomb ? colorHash[current.context.value - 1] : ''
+  const isFlagged = current.matches('flagged')
+  const color = isZero || isBomb || isFlagged ? 'text-red-500' : colorHash[current.context.value - 1]
 
   const bgClass = current.matches('revealed')
-    ? isBomb && parentCurrent.matches('lost')
+    ? isBomb && lost
       ? 'bg-red-300 '
       : 'bg-gray-100 '
     : current.matches('unrevealed.pressed')
@@ -137,6 +138,6 @@ const Cell = ({ service, parentCurrent }: { service: any; parentCurrent: any }) 
         : ''}
     </Button>
   )
-}
+})
 
 export default Cell
