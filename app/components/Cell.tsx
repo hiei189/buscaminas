@@ -57,9 +57,6 @@ export const createCellMachine = (coords: [number, number], value: number | 'X')
             },
             PRESS_BUTTON: {
               actions: 'pressNeighbors'
-            },
-            RELEASE_BUTTON: {
-              actions: 'releaseNeighbors'
             }
           }
         }
@@ -81,10 +78,6 @@ export const createCellMachine = (coords: [number, number], value: number | 'X')
         })),
         pressNeighbors: sendParent((context: any) => ({
           type: 'PRESS_NEIGHBORS',
-          value: context.coords
-        })),
-        releaseNeighbors: sendParent((context: any) => ({
-          type: 'RELEASE_NEIGHBORS',
           value: context.coords
         })),
         unreveal: sendParent((context: any) => ({ type: 'UNREVEAL', value: context.coords }))

@@ -137,7 +137,11 @@ const gameMachine = createMachine(
           }
         })
       },
-      releaseNeighbors: context => context.cells.forEach((cell: any) => cell.send('RELEASE')),
+      releaseNeighbors: context => {
+        context.cells
+          .filter((cell: any) => cell.getSnapshot().matches({ unrevealed: 'pressed' }))
+          .forEach((cell: any) => cell.send('RELEASE'))
+      },
       checkWin: pure(context => {
         const gameFinished = context.cells.filter((cell: any) => cell.getSnapshot().value === 'unrevealed').length === 0
         if (!gameFinished) return
