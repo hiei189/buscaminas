@@ -1,4 +1,4 @@
-import words from 'an-array-of-spanish-words'
+import words from '~/lib/words'
 import { json } from 'remix'
 export const loader = ({ request }) => {
   let url = new URL(request.url)

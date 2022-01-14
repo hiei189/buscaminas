@@ -1,6 +1,6 @@
-import React, { useRef } from 'react'
-import words from 'an-array-of-spanish-words'
-import { assign, createMachine, send as sendAction, spawn } from 'xstate'
+import React, { Fragment } from 'react'
+import words from '~/lib/words'
+import { assign, createMachine, spawn } from 'xstate'
 import { useLoaderData } from 'remix'
 import LetterInput, { createLetterMachine } from '../components/palabrito/LetterInput'
 import { useMachine } from '@xstate/react'
@@ -209,9 +209,12 @@ const palabrito = () => {
           </h1>
         )}
         {current.matches('lost') && (
-          <h1 className='text-5xl mt-8 mb-2 leading-tight font-bold text-transparent bg-clip-text bg-gradient-to-br to-red-100 from-pink-500'>
-            Oh no, perdiste! :(
-          </h1>
+          <Fragment>
+            <h1 className='text-5xl mt-8 mb-2 leading-tight font-bold text-transparent bg-clip-text bg-gradient-to-br to-red-100 from-pink-500'>
+              Oh no, perdiste! :(
+            </h1>
+            <p>La palabra era {current.context.word}</p>
+          </Fragment>
         )}
       </div>
     </div>
