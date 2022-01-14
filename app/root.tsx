@@ -3,6 +3,7 @@ import type { MetaFunction } from 'remix'
 import styles from './tailwind.css'
 import customStyles from './styles.css'
 import { Fragment } from 'react'
+import { ClientOnly } from 'remix-utils'
 
 export function links() {
   return [
@@ -40,7 +41,9 @@ export default function App() {
       </head>
       <body className='h-[calc(100vh+1px)]'>
         <main className='min-h-[90vh]'>
-          <Outlet />
+          <ClientOnly>
+            <Outlet />
+          </ClientOnly>
         </main>
         <ScrollRestoration />
         <Scripts />
