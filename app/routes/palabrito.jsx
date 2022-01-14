@@ -1,15 +1,8 @@
 import React, { Fragment } from 'react'
-import words from '~/lib/words'
+
 import { assign, createMachine, spawn } from 'xstate'
-import { useLoaderData } from 'remix'
 import LetterInput, { createLetterMachine } from '../components/palabrito/LetterInput'
 import { useMachine } from '@xstate/react'
-
-export const loader = () => {
-  const filteredWords = words.filter(word => word.length === 5)
-  const randomWord = filteredWords[Math.floor(Math.random() * filteredWords.length)]
-  return randomWord
-}
 
 const getLetterFromRow = (letters, rowIndex) => {
   return letters
@@ -31,9 +24,28 @@ const gameMachine = createMachine(
     states: {
       playing: {
         entry: 'initialize',
-        initial: 'idle',
+        initial: 'gettingInitialWord',
         states: {
           idle: {},
+          gettingInitialWord: {
+            invoke: {
+              src: async (context, event) => {
+                const res = await fetch('/random_word', {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                  }
+                })
+                const data = await res.json()
+                console.log('🚀 ~ file: palabrito.jsx ~ line 47 ~ src: ~ data', data)
+                return data
+              },
+              onDone: {
+                target: 'idle',
+                actions: assign({ word: (context, event) => event.data })
+              }
+            }
+          },
           lookingForWord: {
             invoke: {
               src: async (context, event) => {
@@ -169,11 +181,7 @@ const gameMachine = createMachine(
 )
 
 const palabrito = () => {
-  const randomWord = useLoaderData()
-
-  const [current, send] = useMachine(gameMachine, {
-    context: { word: randomWord, length: 5, maxTries: 6 }
-  })
+  const [current, send] = useMachine(gameMachine)
 
   const chunks = current.context.letters.reduce((resultArray, item, index) => {
     const chunkIndex = Math.floor(index / current.context.length)
