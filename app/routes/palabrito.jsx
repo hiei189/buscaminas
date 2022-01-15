@@ -37,7 +37,6 @@ const gameMachine = createMachine(
                   }
                 })
                 const data = await res.json()
-                console.log('🚀 ~ file: palabrito.jsx ~ line 47 ~ src: ~ data', data)
                 return data
               },
               onDone: {
@@ -70,7 +69,8 @@ const gameMachine = createMachine(
                 },
                 {
                   target: 'idle',
-                  actions: ['showRowResults', 'moveToNextRow']
+                  actions: ['showRowResults', 'moveToNextRow'],
+                  cond: 'wordExists'
                 },
                 {
                   target: 'idle'
