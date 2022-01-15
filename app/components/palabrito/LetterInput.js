@@ -92,8 +92,7 @@ export const createLetterMachine = (coords, length, initialState) =>
     }
   )
 
-const LetterInput = ({ service }) => {
-  const inputRef = React.useRef(null)
+const LetterInput = React.memo(({ service }) => {
   const [current, send] = useActor(service)
   let classNames = ''
 
@@ -111,7 +110,6 @@ const LetterInput = ({ service }) => {
     <input
       id={current.machine.id}
       value={current.context.value}
-      ref={inputRef}
       className={
         'border-2 text-center font-bold text-lg uppercase border-gray-400 w-10 h-10 m-1 block active:rounded-none focus:rounded-none focus:outline-yellow-500 focus:shadow-none ' +
         classNames
@@ -127,6 +125,6 @@ const LetterInput = ({ service }) => {
       }}
     />
   )
-}
+})
 
 export default LetterInput
