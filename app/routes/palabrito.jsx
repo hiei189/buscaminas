@@ -114,7 +114,7 @@ const gameMachine = createMachine(
         for (let i = 0; i < context.maxTries; i++) {
           for (let j = 0; j < context.length; j++) {
             const initialState = i === 0 ? 'active' : 'inactive'
-            letters.push(spawn(createLetterMachine([i, j], context.length, initialState), `cell-${i}-${j}`))
+            letters.push(spawn(createLetterMachine([i, j], context.length, initialState), `letter-${i}-${j}`))
           }
         }
         letters[0].send('FOCUS')
@@ -125,13 +125,15 @@ const gameMachine = createMachine(
       goNextLetter: (context, event) => {
         const { coords } = event
         const nextLetterCoords = [coords[0], coords[1] + 1]
-        context.letters.find(letter => letter.id === `cell-${nextLetterCoords[0]}-${nextLetterCoords[1]}`).send('FOCUS')
+        context.letters
+          .find(letter => letter.id === `letter-${nextLetterCoords[0]}-${nextLetterCoords[1]}`)
+          .send('FOCUS')
       },
       goBackLetter: (context, event) => {
         const { coords } = event
         const previousLetterCoords = [coords[0], coords[1] - 1]
         context.letters
-          .find(letter => letter.id === `cell-${previousLetterCoords[0]}-${previousLetterCoords[1]}`)
+          .find(letter => letter.id === `letter-${previousLetterCoords[0]}-${previousLetterCoords[1]}`)
           .send('FOCUS')
       },
       showRowResults: (context, event) => {
@@ -140,11 +142,11 @@ const gameMachine = createMachine(
 
         maybeWord.split('').forEach((letter, col) => {
           if (targetWord[col] === letter) {
-            context.letters.find(cell => cell.id === `cell-${rowIndex}-${col}`).send('SHOW_CORRECT')
+            context.letters.find(cell => cell.id === `letter-${rowIndex}-${col}`).send('SHOW_CORRECT')
           } else if (targetWord.includes(letter)) {
-            context.letters.find(cell => cell.id === `cell-${rowIndex}-${col}`).send('SHOW_ALMOST_CORRECT')
+            context.letters.find(cell => cell.id === `letter-${rowIndex}-${col}`).send('SHOW_ALMOST_CORRECT')
           } else {
-            context.letters.find(cell => cell.id === `cell-${rowIndex}-${col}`).send('SHOW_WRONG')
+            context.letters.find(cell => cell.id === `letter-${rowIndex}-${col}`).send('SHOW_WRONG')
           }
         })
       },
@@ -153,7 +155,7 @@ const gameMachine = createMachine(
         context.letters
           .filter(letter => letter.getSnapshot().context.coords[0] === rowIndex + 1)
           .forEach(letter => letter.send('ACTIVATE'))
-        context.letters.find(cell => cell.id === `cell-${rowIndex + 1}-0`).send('FOCUS')
+        context.letters.find(cell => cell.id === `letter-${rowIndex + 1}-0`).send('FOCUS')
       }
     },
     guards: {
