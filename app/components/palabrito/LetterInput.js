@@ -121,7 +121,7 @@ const LetterInput = ({ service }) => {
         if (e.key === 'Backspace') {
           send('BACK')
         }
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' || e.keyCode == 13) {
           send('ROW_SUBMIT')
         }
       }}
