@@ -174,7 +174,7 @@ const gameMachine = createMachine(
       },
       wordExists: (_, event) => event.data.exists,
       wordDoesntExists: (_, event) => !event.data.exists,
-      sameWord: (context, event) => event.data.maybeWord === context.word,
+      sameWord: (context, event) => event.data.maybeWord.toLowerCase() === context.word.toLowerCase(),
       tooManyTries: (context, event) => event.data.rowIndex == context.maxTries - 1
     }
   }

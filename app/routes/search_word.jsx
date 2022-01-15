@@ -3,7 +3,7 @@ import { json } from 'remix'
 export const loader = ({ request }) => {
   let url = new URL(request.url)
   let maybeWord = url.searchParams.get('q')
-  const exists = !!fullWords.find(word => word === maybeWord)
+  const exists = !!fullWords.find(word => word.toLowerCase() === maybeWord.toLowerCase())
   return json({
     exists
   })
